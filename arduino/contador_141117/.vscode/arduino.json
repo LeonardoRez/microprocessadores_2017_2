@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "contador_141117.ino",
+    "port": "/dev/ttyACM0"
+}
