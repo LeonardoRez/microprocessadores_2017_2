@@ -1,6 +1,6 @@
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
 #include "notas.h"
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+// LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 const int pinoSwitchLCD = 7; // define o switch menu/LCD
 int estadoSwitchLCD = 0;     // muda o estado do menu/LCD pra LOW
 int estadoAnteriorLCD = 0;
@@ -13,16 +13,20 @@ int contadorSwitchLCD = 0; // contador para o numero de vezes que o botao MENU f
 // seta a frequência das notas musicais (teclas)
 int notas[] = {262, 294, 330, 349, 392, 440, 494}; // Seta notas C, D, E, F, G, A, B
 
+LiquidCrystal_I2C lcd(0x20, 16, 2); // instancia do display LCD de 16x2 no endereço (I2C) 0x20
+
 void setup()
 {
 
     Serial.begin(9600);
 
-    lcd.begin(16, 2);
+    lcd.init();      // Inicializando o LCD
+    lcd.backlight(); // Ligando o BackLight do LCD
+
+    // lcd.begin(16, 2);
     pinMode(pinoSwitchLCD, INPUT);
     pinMode(LEDazul, OUTPUT);
     digitalWrite(LEDazul, LOW); // LED fica desligado enquanto as teclas estão ativas
-
 }
 void loop()
 {
@@ -46,8 +50,8 @@ void loop()
     ////// NOTAS //////
     // Use the resistor ladder you created to change the voltage of each piano key button
     // 220 ohm = C5 // 560 ohm = D5 // 1K ohm = E5 // etc...
-    //identifica qual tecla tocar pelo valor lido resistido pelo resistor 
-    if (keyVal == 1023)
+    //identifica qual tecla tocar pelo valor lido resistido pelo resistor
+    if (keyVal >= 1010)
     {
         tone(8, notas[0]); // C
     }
@@ -87,14 +91,14 @@ void LCDstart()
 {
     int keyVal = analogRead(A0);
     estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button
-
+    int flag = 1;
     while (estadoSwitchLCD == LOW)
-    {                                               // continue loop while menu button isn't pressed
+    {                                                 // continue loop while menu button isn't pressed
         estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button every time loop starts
 
         //************* START SONG 1 TITLE LOOP ********************
         if (estadoSwitchLCD == HIGH)
-        {                       // if menu button is pressed, then...
+        {                        // if menu button is pressed, then...
             contadorSwitchLCD++; // set button count to 1
             Serial.print("number of button pushes:  ");
             Serial.println(contadorSwitchLCD);
@@ -107,14 +111,20 @@ void LCDstart()
 
         //************* ELSE SHOW MENU ****************
         else
-        {                         // if menu button is not pressed, then...
-            contadorSwitchLCD = 0; // set menu button count to 0
-            lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print("WHICH SONG WOULD");
-            lcd.setCursor(0, 1);
-            lcd.print("YOU LIKE TO PLAY");
-            delay(50); // return to main
+        {
+            if (flag)
+            {
+
+                // if menu button is not pressed, then...
+                contadorSwitchLCD = 0; // set menu button count to 0
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("WHICH SONG WOULD");
+                lcd.setCursor(0, 1);
+                lcd.print("YOU LIKE TO PLAY");
+                // delay(50); // return to main
+                flag = 0;
+            }
         }
 
     } // end while
@@ -127,12 +137,12 @@ void Song1title()
     estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
 
     while (estadoSwitchLCD == LOW)
-    {                                               // continue loop while menu button isn't pressed
+    {                                                 // continue loop while menu button isn't pressed
         estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
-
+        int flag = 1;
         //************* START SONG 2 TITLE LOOP ********************
         if (estadoSwitchLCD == HIGH)
-        {                       // if menu button is pressed, then...
+        {                        // if menu button is pressed, then...
             contadorSwitchLCD++; // set button count to 2
             Serial.print("number of button pushes:  ");
             Serial.println(contadorSwitchLCD);
@@ -147,20 +157,24 @@ void Song1title()
         { // if menu button is not pressed
             int keyVal = analogRead(A0);
             Serial.println(keyVal);
-
+            
             if (keyVal >= 2)
             {
                 digitalWrite(LEDazul, LOW);
                 Song1();
                 break;
             } // end if
-
-            lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print("SUPER MARIO BROS");
-            lcd.setCursor(0, 1);
-            lcd.print("   THEME SONG");
-            delay(50);
+            
+            if (flag)
+            {
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("SUPER MARIO BROS");
+                lcd.setCursor(0, 1);
+                lcd.print("   THEME SONG");
+                // delay(50);
+                flag = 0;
+            }
         }
     } // end while song 1 -> 2
 
@@ -171,14 +185,14 @@ void Song2title()
 {
     int keyVal = analogRead(A0);
     estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
-
+    int flag = 1;
     while (estadoSwitchLCD == LOW)
-    {                                               // continue loop while menu button isn't pressed
+    {                                                 // continue loop while menu button isn't pressed
         estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
 
         //************* START SONG 3 TITLE LOOP ********************
         if (estadoSwitchLCD == HIGH)
-        {                       // if menu button is pressed, then...
+        {                        // if menu button is pressed, then...
             contadorSwitchLCD++; // set button count to 3
             Serial.print("number of button pushes:  ");
             Serial.println(contadorSwitchLCD);
@@ -193,20 +207,24 @@ void Song2title()
         { // if menu button is not pressed
             int keyVal = analogRead(A0);
             Serial.println(keyVal);
-
+            
             if (keyVal >= 2)
             {
                 digitalWrite(LEDazul, LOW);
                 Song2();
                 break;
             } // end if
-
-            lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print("SUPER MARIO BROS");
-            lcd.setCursor(0, 1);
-            lcd.print("   UNDERWORLD");
-            delay(50);
+            
+            if (flag)
+            {
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("SUPER MARIO BROS");
+                lcd.setCursor(0, 1);
+                lcd.print("   UNDERWORLD");
+                // delay(50);
+                flag = 0;
+            }
         }
 
     } // end while song 2 -> 3
@@ -218,14 +236,14 @@ void Song3title()
 {
     int keyVal = analogRead(A0);
     estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
-
+    int flag = 1;
     while (estadoSwitchLCD == LOW)
-    {                                               // continue loop while menu button isn't pressed
+    {                                                 // continue loop while menu button isn't pressed
         estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
 
         //************* START SONG 4 TITLE LOOP ********************
         if (estadoSwitchLCD == HIGH)
-        {                       // if menu button is pressed, then...
+        {                        // if menu button is pressed, then...
             contadorSwitchLCD++; // set button count to 4
             Serial.print("number of button pushes:  ");
             Serial.println(contadorSwitchLCD);
@@ -240,20 +258,24 @@ void Song3title()
         { // if menu button is not pressed
             int keyVal = analogRead(A0);
             Serial.println(keyVal);
-
+            
             if (keyVal >= 2)
             {
                 digitalWrite(LEDazul, LOW);
                 Song3();
                 break;
             } // end if
-
-            lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print("    JEOPARDY");
-            lcd.setCursor(0, 1);
-            lcd.print("   THEME SONG");
-            delay(50);
+            
+            if (flag)
+            {
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("    JEOPARDY");
+                lcd.setCursor(0, 1);
+                lcd.print("   THEME SONG");
+                // delay(50);
+                flag = 0;
+            }
         }
 
     } // end while song 3 -> 4
@@ -267,12 +289,12 @@ void Song4title()
     estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
 
     while (estadoSwitchLCD == LOW)
-    {                                               // continue loop while menu button isn't pressed
+    {                                                 // continue loop while menu button isn't pressed
         estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
-
+        int flag = 1;
         //************* START SONG 5 TITLE LOOP ********************
         if (estadoSwitchLCD == HIGH)
-        {                       // if menu button is pressed, then...
+        {                        // if menu button is pressed, then...
             contadorSwitchLCD++; // set button count to 5
             Serial.print("number of button pushes:  ");
             Serial.println(contadorSwitchLCD);
@@ -287,20 +309,24 @@ void Song4title()
         { // if menu button is not pressed
             int keyVal = analogRead(A0);
             Serial.println(keyVal);
-
+            
             if (keyVal >= 2)
             {
                 digitalWrite(LEDazul, LOW);
                 Song4();
                 break;
             } // end if
-
-            lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print("     SONG 4");
-            lcd.setCursor(0, 1);
-            lcd.print("   TITLE HERE");
-            delay(50);
+            
+            if (flag)
+            {
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("     SONG 4");
+                lcd.setCursor(0, 1);
+                lcd.print("   TITLE HERE");
+                // delay(50);
+                flag = 0;
+            }
         }
 
     } // end while song 4 -> 5
@@ -314,12 +340,12 @@ void Song5title()
     estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
 
     while (estadoSwitchLCD == LOW)
-    {                                               // continue loop while menu button isn't pressed
+    {                                                 // continue loop while menu button isn't pressed
         estadoSwitchLCD = digitalRead(pinoSwitchLCD); // check state of menu button again
-
+        int flag = 1;
         //************* START SONG 4 TITLE LOOP ********************
         if (estadoSwitchLCD == HIGH)
-        {                         // if menu button is pressed, then...
+        {                          // if menu button is pressed, then...
             contadorSwitchLCD = 0; // set button count to 0
             Serial.print("number of button pushes:  ");
             Serial.println(contadorSwitchLCD);
@@ -331,20 +357,24 @@ void Song5title()
         { // if menu button is not pressed
             int keyVal = analogRead(A0);
             Serial.println(keyVal);
-
+            
             if (keyVal >= 2)
             {
                 digitalWrite(LEDazul, LOW);
                 Song5();
                 break;
             } // end if
-
-            lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print("     SONG 5");
-            lcd.setCursor(0, 1);
-            lcd.print("   TITLE HERE");
-            delay(50);
+            
+            if (flag)
+            {
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("     SONG 5");
+                lcd.setCursor(0, 1);
+                lcd.print("   TITLE HERE");
+                // delay(50);
+                flag = 0;
+            }
         }
 
     } // end while song 4 -> 5
